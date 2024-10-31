@@ -5,11 +5,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import os
 from call_dataframe import call_dataframe, week_ranking
 
-data = week_ranking(call_dataframe())
+data = week_ranking(call_dataframe()) # 加載電影數據
 
-app = Flask(__name__)
+app = Flask(__name__) # 初始化Flask應用
 
-# Flask-Mail 配置
+#Flask-Mail配置
 app.config.update(
     MAIL_SERVER="smtp.gmail.com",
     MAIL_PORT=465,
@@ -20,9 +20,9 @@ app.config.update(
     MAIL_DEFAULT_SENDER="a2b3c7g@gmail.com"
 )
 
-mail = Mail(app)
+mail = Mail(app) #初始化Flask-Mail
 
-# 資料庫配置
+#資料庫配置
 db_config = {
     'host': 'u3r5w4ayhxzdrw87.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
     'user': 'dhv81sqnky35oozt',
@@ -30,7 +30,7 @@ db_config = {
     'database': 'xltc236odfo1enc9',
 }
 
-# 中英文類型
+#中英文電影類型對照表
 genre_translation = {
     "Action": "動作",
     "Adventure": "冒險",
@@ -50,7 +50,7 @@ genre_translation = {
     "Thriller": "驚悚",
 }
 
-def translate_genres(genres, to_language="zh"):
+def translate_genres(genres, to_language="zh"): #根據用戶選擇的語言進行電影類型翻譯
     translated_genres = []
     for genre in genres:
         if to_language == "zh":
@@ -61,7 +61,7 @@ def translate_genres(genres, to_language="zh"):
             )
     return translated_genres
 
-def get_favorite_genres(email): #從verifiedAccount表中取得使用者的喜好電影類型
+def get_favorite_genres(email): #從資料庫中根據用戶電子郵件獲取喜好電影類型
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
@@ -85,7 +85,7 @@ def get_favorite_genres(email): #從verifiedAccount表中取得使用者的喜�
         cursor.close()
         connection.close()
         
-def get_all_users(): #獲取所有用戶信箱
+def get_all_users(): #獲取所有用戶的電子郵件地址
     try:
         connection = mysql.connector.connect(**db_config)
         cursor = connection.cursor()
@@ -94,7 +94,6 @@ def get_all_users(): #獲取所有用戶信箱
         cursor.execute(query)
         results = cursor.fetchall()
         
-        # 提取邮箱地址
         return [result[0] for result in results if result[0]]
 
     except mysql.connector.Error as err:
@@ -105,7 +104,7 @@ def get_all_users(): #獲取所有用戶信箱
         cursor.close()
         connection.close()
 
-def get_movies_by_genres(email):  # 從 all_movies 表中根據使用者的喜好類型推薦電影
+def get_movies_by_genres(email):  #根據用戶喜好類型推薦電影
     favorite_genres = get_favorite_genres(email)
     
     if not favorite_genres:
@@ -116,7 +115,7 @@ def get_movies_by_genres(email):  # 從 all_movies 表中根據使用者的喜�
     recommended_movies = filtered_movies.nlargest(3, '當周票房數')
     return recommended_movies['中文片名']
 
-def send_email_with_flask_mail(recipient_email, subject, movies):
+def send_email_with_flask_mail(recipient_email, subject, movies): #發送推薦電影的郵件給用戶
     with app.app_context():
         movie_list_items = "".join(f"<li>{movie}</li>" for movie in movies)
         movie_buttons = "".join(
@@ -125,55 +124,68 @@ def send_email_with_flask_mail(recipient_email, subject, movies):
         )
 
         html_content = f"""
-        <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        background-color: #f4f4f4;
-                    }}
-                    .container {{
-                        width: 80%;
-                        margin: auto;
-                        background: #ffffff;
-                        padding: 20px;
-                        border-radius: 8px;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                    }}
-                    h1 {{ color: #333333; }}
-                    ul {{ list-style-type: disc; padding-left: 20px; }}
-                    .button {{
-                        padding: 10px 20px;
-                        background-color: #aaa;
-                        color: white;
-                        text-decoration: none;
-                        border-radius: 5px;
-                        margin-right: 10px;
-                    }}
-                    .footer {{
-                        text-align: center;
-                        margin-top: 20px;
-                        color: #666;
-                        font-size: 0.9em;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>電影推薦信</h1>
-                    <p>親愛的用戶，</p>
-                    <p>根據您喜好的類型，我們為您推薦了以下電影：</p>
-                    <ul>{movie_list_items}</ul>
-                    <p>希望您會喜歡！</p>
-                    <div>{movie_buttons}</div>
-                </div>
-                <div class="footer">
-                    <p>這是一封自動發送的電子郵件，請勿回覆。</p>
-                </div>
-            </body>
-        </html>
-        """.encode("utf-8").decode("utf-8")
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                width: 90%;
+                max-width: 600px;
+                margin: auto;
+                background: #ffffff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }}
+            h1 {{ color: #333333; }}
+            ul {{ list-style-type: disc; padding-left: 20px; }}
+            .button {{
+                display: inline-block;
+                padding: 10px 20px;
+                background-color: #aaa;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 5px 0;
+                text-align: center;
+                width: 100%;
+            }}
+            .footer {{
+                text-align: center;
+                margin-top: 20px;
+                color: #666;
+                font-size: 0.9em;
+            }}
+            @media (min-width: 600px) {{
+                .button {{
+                    width: auto;
+                }}
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>電影推薦信</h1>
+            <p>親愛的用戶，</p>
+            <p>根據您喜好的類型，我們為您推薦了以下電影：</p>
+            <ul>{movie_list_items}</ul>
+            <p>希望您會喜歡！</p>
+            <div>{movie_buttons}</div>
+        </div>
+        <div class="footer">
+            <p>這是一封自動發送的電子郵件，請勿回覆。</p>
+        </div>
+    </body>
+</html>
+""".encode("utf-8").decode("utf-8")
+
 
         msg = Message(
             subject=subject,
@@ -202,12 +214,12 @@ def scheduled_job():
         else:
             print(f"No recommendations available for {user_email}.")
             
-scheduler = BackgroundScheduler()
+scheduler = BackgroundScheduler() #初始化排程器
 
-def shutdown():
+def shutdown(): #設置排程器運行狀態和排程時間
     if not scheduler.running:
         try:
-            scheduler.add_job(scheduled_job, 'interval', minutes=1)
+            scheduler.add_job(scheduled_job, 'cron', day_of_week='mon', hour=9)
             scheduler.start()     
         except Exception as e:
             print(f"error{e}")
