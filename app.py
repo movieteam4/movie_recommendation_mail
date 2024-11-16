@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_mail import Mail, Message
 import mysql.connector
-from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.schedulers.background import BackgroundScheduler
 import os
 from call_dataframe import call_dataframe, week_ranking
 
@@ -153,7 +153,7 @@ def send_email_with_flask_mail(recipient_email, subject, movies): #發送推薦�
                 color: white;
                 text-decoration: none;
                 border-radius: 5px;
-                margin: 5px 0;
+                margin: 5px;
                 text-align: center;
                 width: 100%;
             }}
@@ -214,19 +214,20 @@ def scheduled_job():
         else:
             print(f"No recommendations available for {user_email}.")
             
-scheduler = BackgroundScheduler() #初始化排程器
+# scheduler = BackgroundScheduler() #初始化排程器
 
-def shutdown(): #設置排程器運行狀態和排程時間
-    if not scheduler.running:
-        try:
-            scheduler.add_job(scheduled_job, 'cron', day_of_week='mon', hour=9)
-            scheduler.start()     
-        except Exception as e:
-            print(f"error{e}")
-            scheduler.shutdown()
-        print("Scheduler started")
+# def shutdown(): #設置排程器運行狀態和排程時間
+#     if not scheduler.running:
+#         try:
+#             # scheduler.add_job(scheduled_job, 'cron', day_of_week='mon', hour=9)
+#             scheduler.add_job(scheduled_job, 'interval', minutes=1)
+#             scheduler.start()     
+#         except Exception as e:
+#             print(f"error{e}")
+#             scheduler.shutdown()
+#         print("Scheduler started")
 
-shutdown()
+# shutdown()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

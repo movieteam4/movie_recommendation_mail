@@ -1,4 +1,6 @@
 mysql-connector
-apscheduler
 flask
 flask_mail
+pandas
+lxml
+beautifulsoup4
